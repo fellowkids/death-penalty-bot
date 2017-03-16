@@ -3,8 +3,6 @@ from foo.texas import get_latest_inmates
 from foo.timehelper import parse_date
 
 
-
-
 def bot(thedate='Today'): #startdate is None or a string
     message = {}
     thedate = parse_date(thedate)

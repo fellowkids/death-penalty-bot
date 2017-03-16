@@ -11,7 +11,6 @@ def count_weeks_between(start_date, finish_date):
     return round(count_days_between(start_date, finish_date) / 7, 1)
 
 
-
 def parse_date(xdate):
     """
     xdate is 'Today', or any kind of human readable date string,
