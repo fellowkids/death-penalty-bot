@@ -1,31 +1,28 @@
-from texas_scraper import get_inmates
-from datetime import datetime
-from dateutil import parser
-
-def make_story(reference_date, inmate):
-    """
-    reference_date is a datetime
-    inmate is a dict
-    """
-    seconds_till = inmate['execution_date'].timestamp() - reference_date.timestamp()
-    days_till = round(seconds_till / (60 * 60 * 24), 1)
-
-    txt = """
-
-    As of {date}, in {days} days, Texas will execute: {first_name} {last_name}
-    """
-
-    return txt.format(  date=reference_date.strftime('%Y-%m-%d'),
-                        days=days_till, first_name=inmate['first_name'],
-                      last_name=inmate['last_name'],)
+from foo.stories import tell_aggregate, tell_story
+from foo.texas import get_latest_inmates
+from foo.timehelper import parse_date
 
 
-def bot(datestr):
-    refdate = parser.parse(datestr)
 
-    inmates = get_inmates()
-    sortedinmates = sorted(inmates, key=lambda x: x['execution_date'])
+
+def bot(thedate='Today'): #startdate is None or a string
+    message = {}
+    thedate = parse_date(thedate)
+    inmates = get_latest_inmates(as_of_date=thedate)
+
+    # form the aggregate story
+    aggstory = tell_aggregate(thedate, inmates)
+
+
+    # form the story about the next to die
     # first inmate is most recent date
-    story = make_story(refdate, sortedinmates[0])
-    print(story)
+    next_inmate = inmates[0] # assume reverse chrono order
+    next_story = tell_story(thedate, next_inmate)
+
+
+    message['date'] = thedate
+    message['aggregate'] = aggstory
+    message['story'] = story
+
+    return message
 

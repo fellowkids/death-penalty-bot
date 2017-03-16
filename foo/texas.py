@@ -1,23 +1,33 @@
-# Number of days until Texas's next scheduled execution
-from datetime import datetime
+from foo.timehelper import parse_texas_time, parse_date
 from bs4 import BeautifulSoup
 import requests
 
-
 SOURCE_URL = "http://www.tdcj.state.tx.us/death_row/dr_scheduled_executions.html"
 
+def get_latest_inmates(as_of_date="Today"):
+    """
+    Returns inmates executed on as_of_date or afterwards
+    """
+    thedate = parse_date(as_of_date)
+    inmates = get_inmates()
+    x_inmates = []
+    for i in inmates:
+        if i['execution_date'] >= thedate:
+            x_inmates.append(i)
+
+    return x_inmates
+
 def get_inmates():
-    html = download_page()
-    inmates = extract_inmates(html)
-
-    return inmates
-
+    htmltxt = download_page()
+    inmates = extract_inmates(htmltxt)
+    # sort them
+    return sorted(inmates, key=lambda x: x['execution_date'], reverse=True)
 
 def download_page():
     resp =  requests.get(SOURCE_URL)
     return resp.text
 
-def extract_inmates(htmltxt):
+def scrape_inmates(htmltxt):
     """
     htmltxt is a string
 
@@ -47,14 +57,5 @@ def extract_inmates(htmltxt):
 
         inmates.append(d)
     return inmates
-
-
-def convert_texas_date_string(datestr):
-    """
-    datestr is a string that looks like '9/12/2017'
-
-    returns datetime object
-    """
-    return datetime.strptime(datestr, '%m/%d/%Y')
 
 
